@@ -2,6 +2,7 @@
 
 import random
 from individual import Individual
+import math
 
 class Genetic:
 
@@ -118,11 +119,15 @@ class Genetic:
 
 
         individual.fitness = fitness
-        return
+        return fitness
 
     #receives a generation and returns the next generation
     @staticmethod
     def breed(generation, my_registers):
+        #notes:
+            #dna diversity is dying 2 quickly, lets pump it up
+            #first of all, we're gonna create twice as many offspring
+            #and we're only gonna keep the half with the best fitness
         gen_size = len(generation)
         my_new_gen = []
 
@@ -130,26 +135,62 @@ class Genetic:
 
         selection_pool = []
 
+        
+
+
+        #selecting top performer of this generation
+        top_performer = Individual()
+        second_top = Individual()
+
+        sorted_prev_gen = sorted(generation, key=Individual.get_fitness)
+        sorted_prev_gen.reverse()
+        for i in range(0, len(sorted_prev_gen)):
+            print("old:{}, calculated:{}".format(sorted_prev_gen[i].fitness, Genetic.fitness(sorted_prev_gen[i])))
+        top_performer.configuration = sorted_prev_gen[0].configuration.copy()
+        Genetic.fitness(top_performer)
+
+        second_top.configuration = sorted_prev_gen[1].configuration.copy()
+        Genetic.fitness(second_top)
+
+        print("top fitness:{}".format(top_performer.fitness))
+        print(top_performer.configuration)
+
 
         #weighted random
         for individual in generation:      
-            selection_pool += individual.fitness * [individual]
+            #print(individual.fitness)
+            #print("repetitions:{}".format(math.floor(individual.fitness / 10)))
+            selection_pool += math.floor(individual.fitness / 10)  * [individual]
             selection_pool += [individual]
+
+        #print(selection_pool)
+
+        #print("random choices:")
 
         #parent generation
         for i in range(0, gen_size):
-            gen_parents.append(random.choice(selection_pool))
+            my_aux = random.choice(selection_pool)
+            my_new_parent = Individual()
+            my_new_parent.configuration = my_aux.configuration.copy()
+
+            #print(my_new_parent)
+            gen_parents.append(my_new_parent)
+
+        #print(gen_parents)
 
 
         #creating offspring
-        for i in range(0, gen_size):
+        for i in range(0, 2 * gen_size):
             if i % 2 == 1:
                 offspring1 = Individual()
                 offspring2 = Individual()
-                parent1 = gen_parents[i-1]
-                parent2 = gen_parents[i]
-                mirror = random.randint(1,4)
+                parent1 = gen_parents[(i % gen_size)-1]
+                parent2 = gen_parents[(i % gen_size)]
 
+                mirror = random.randint(0,4)
+
+                #print(parent1)
+                #print(parent2)
                 counter = 0
                 for k, v in offspring1.configuration.items():
                     if counter <= mirror:
@@ -159,11 +200,15 @@ class Genetic:
                         offspring1.configuration[k] = parent2.configuration[k]
                         offspring2.configuration[k] = parent1.configuration[k]
                     counter+=1
+                #print("with a mirror of: {} created:".format(mirror))
+                #print(offspring1)
+                #print(offspring2)
                 my_new_gen.append(offspring1)
                 my_new_gen.append(offspring2)
 
             else:
                 pass
+
 
 
         #mutate
@@ -175,21 +220,55 @@ class Genetic:
         for item in my_new_gen:
             Genetic.fitness(item)
 
-        return my_new_gen
+
+        #culling generation
+        sorted_gen = sorted(my_new_gen, key=Individual.get_fitness)
+        
+        while len(sorted_gen) > gen_size:
+            del sorted_gen[0]
+
+        
+            
+        sorted_gen.reverse()
+        for item in sorted_gen:
+            print(item.fitness)
+        
+        #inserting top of last generation
+        if sorted_gen[-1].fitness < top_performer.fitness:
+            del sorted_gen[-1]
+            sorted_gen.append(top_performer)
+        if sorted_gen[-2].fitness < second_top.fitness:
+            del sorted_gen[-2]
+            sorted_gen.append(second_top)
+
+        print("replaced the weakest")
+
+        for item in sorted_gen:
+            print(item.fitness)
+        
+        print("MY weakest:{}, FITNESS: {}".format(sorted_gen[-3].configuration, sorted_gen[-3].fitness))
+
+
+        return sorted_gen
 
     @staticmethod
     def mutate(generation, my_registers):
+        #notes:
+            
 
         #modifying the quantity of items per slot
-        meta_chance = 1
+        meta_chance = 10
         for individual in generation:
+            #print(individual)
             for k, v in individual.configuration.items():
-                roulette = random.randint(0, 500)
-                if roulette < meta_chance:
+                roulette = random.randint(0, 1000)
+
+                if roulette < meta_chance / (1 + len(v)):
+                    #print("triggering a meta change for {}".format(k))
                     #print("inserting")
                     #gonna decide if we add or take
-                    if len(individual.configuration[k]) > 0:
-                        adding = (1 == random.randint(0,1))
+                    if len(individual.configuration[k]) > 1:
+                        adding = (1 < random.randint(0,len(individual.configuration[k])))
                     else:
                         adding = True
 
@@ -198,18 +277,28 @@ class Genetic:
                         individual.add(k, to_insert)
                     else:
                         individual.remove(k)
-
+            #print(individual)
+            #print("----------<>-----------")
+        
+        #print("----------------------------------------now for inner--------------------------")
         modi_chance = 5
         for individual in generation:
+            #print(individual)
             for k, v in individual.configuration.items():
-                for item in v:
+                for i in range(0, len(v)):
                     roulette = random.randint(0, 500)
                     if roulette < modi_chance:
-                        #print("modifying")
-                        item = random.choice(my_registers)
+                        #print("triggering an inner change")
+                        new_item = random.choice(my_registers)
+                        #print(new_item)
+                        while new_item == v[i]:
+                            new_item = random.choice(my_registers)
+                        #print("{} became {}".format(v[i], new_item))
+                        individual.configuration[k][i] = new_item
                    
 
-        
+            #print(individual)
+            #print("----------<>-----------")
 
         return generation
 

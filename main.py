@@ -32,7 +32,7 @@ def main():
             for item in new_gen:
                 if item.fitness > top_fitness:
                     top_fitness = item.fitness
-                    print("{} broke to: {}".format(item, top_fitness))
+                    #print("{} broke to: {}".format(item, top_fitness))
 
     except KeyboardInterrupt:
         print_all_gen(new_gen)
@@ -58,7 +58,7 @@ def read_registries():
     return items_result
 
 def test():
-    population_size = 4
+    population_size = 10
     my_registers = read_registries()
     initial_population = []
 
@@ -72,9 +72,17 @@ def test():
         initial_population.append(myInd)
 
     
-    print_all_gen(initial_population)
-    print("----------------")
-    print_all_gen(Genetic.breed(initial_population, my_registers))
+    #print_all_gen(initial_population)
+    #print("----------------")
+
+    print("\n/////////////////////////////////////////////GENERATION: {}".format(0))
+    new_gen = Genetic.breed(initial_population, my_registers)
+    for i in range(1, 50):
+        print("\n/////////////////////////////////////////////GENERATION: {}".format(i))
+        new_gen = Genetic.breed(new_gen, my_registers)
+        #print_all_gen(new_gen)
+
+
 
 
 if __name__ == "__main__":

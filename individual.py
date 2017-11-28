@@ -17,7 +17,12 @@ class Individual:
         self.configuration[k].append(val)
 
     def remove(self, k):
-        self.configuration[k].pop()
+        ind_to_delete = random.randint(0, len(self.configuration[k])-1)
+        del self.configuration[k][ind_to_delete]
+
+    @staticmethod
+    def get_fitness(self):
+        return self.fitness
 
     def __str__(self):
         my_str = "------\n"
