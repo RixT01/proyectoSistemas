@@ -34,6 +34,8 @@ def main():
                     top_fitness = item.fitness
                     #print("{} broke to: {}".format(item, top_fitness))
 
+        
+        print_all_gen(new_gen)
     except KeyboardInterrupt:
         print_all_gen(new_gen)
 
@@ -86,7 +88,7 @@ def test():
 
 
 if __name__ == "__main__":
-   #main()
-   test()
+   main()
+   #test()
 
 

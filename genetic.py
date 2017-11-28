@@ -30,8 +30,7 @@ class Genetic:
             prev_sock = None
             for sock in individual.configuration["socks"]:
                 if sock == prev_sock:
-                    fitness += 15
-                    break
+                    pass
                 elif prev_sock is None:
                     pass
                 else:
@@ -39,13 +38,14 @@ class Genetic:
         if (shoes_items) > 1:
             prev_shoe = None
             for shoe in individual.configuration["shoes"]:
+
                 if shoe == prev_shoe:
-                    fitness += 15
-                    break
+                    pass
                 elif prev_shoe is None:
                     pass
                 else:
                     fitness -= 5
+                prev_shoe = shoe
 
         #calculating fitness for weird accesories
         wrist_used = 0
@@ -144,16 +144,19 @@ class Genetic:
 
         sorted_prev_gen = sorted(generation, key=Individual.get_fitness)
         sorted_prev_gen.reverse()
-        for i in range(0, len(sorted_prev_gen)):
-            print("old:{}, calculated:{}".format(sorted_prev_gen[i].fitness, Genetic.fitness(sorted_prev_gen[i])))
-        top_performer.configuration = sorted_prev_gen[0].configuration.copy()
+        #for i in range(0, len(sorted_prev_gen)):
+            #print("old:{}, calculated:{}".format(sorted_prev_gen[i].fitness, Genetic.fitness(sorted_prev_gen[i])))
+
+        top_performer.configuration = sorted_prev_gen[0].configuration
         Genetic.fitness(top_performer)
 
-        second_top.configuration = sorted_prev_gen[1].configuration.copy()
+        second_top.configuration = sorted_prev_gen[1].configuration
         Genetic.fitness(second_top)
 
-        print("top fitness:{}".format(top_performer.fitness))
-        print(top_performer.configuration)
+        #print("top fitness:{} calculated: {}".format(top_performer.fitness, Genetic.fitness(top_performer)))
+        #print("2 fitness:{} calculated: {}".format(second_top.fitness, Genetic.fitness(second_top)))
+
+ 
 
 
         #weighted random
@@ -171,7 +174,7 @@ class Genetic:
         for i in range(0, gen_size):
             my_aux = random.choice(selection_pool)
             my_new_parent = Individual()
-            my_new_parent.configuration = my_aux.configuration.copy()
+            my_new_parent.configuration = dict(my_aux.configuration)
 
             #print(my_new_parent)
             gen_parents.append(my_new_parent)
@@ -194,11 +197,11 @@ class Genetic:
                 counter = 0
                 for k, v in offspring1.configuration.items():
                     if counter <= mirror:
-                        offspring1.configuration[k] = parent1.configuration[k]
-                        offspring2.configuration[k] = parent2.configuration[k]
+                        offspring1.configuration[k] = list(parent1.configuration[k])
+                        offspring2.configuration[k] = list(parent2.configuration[k])
                     else:
-                        offspring1.configuration[k] = parent2.configuration[k]
-                        offspring2.configuration[k] = parent1.configuration[k]
+                        offspring1.configuration[k] = list(parent2.configuration[k])
+                        offspring2.configuration[k] = list(parent1.configuration[k])
                     counter+=1
                 #print("with a mirror of: {} created:".format(mirror))
                 #print(offspring1)
@@ -224,29 +227,29 @@ class Genetic:
         #culling generation
         sorted_gen = sorted(my_new_gen, key=Individual.get_fitness)
         
-        while len(sorted_gen) > gen_size:
+        while len(sorted_gen) > gen_size - 2:
             del sorted_gen[0]
 
         
             
         sorted_gen.reverse()
-        for item in sorted_gen:
-            print(item.fitness)
+        #for item in sorted_gen:
+            #print(item.fitness)
         
         #inserting top of last generation
-        if sorted_gen[-1].fitness < top_performer.fitness:
-            del sorted_gen[-1]
-            sorted_gen.append(top_performer)
-        if sorted_gen[-2].fitness < second_top.fitness:
-            del sorted_gen[-2]
-            sorted_gen.append(second_top)
-
-        print("replaced the weakest")
-
-        for item in sorted_gen:
-            print(item.fitness)
         
-        print("MY weakest:{}, FITNESS: {}".format(sorted_gen[-3].configuration, sorted_gen[-3].fitness))
+
+        #print("top fitness:{} calculated: {}".format(top_performer.fitness, Genetic.fitness(top_performer)))
+        #print("2 fitness:{} calculated: {}".format(second_top.fitness, Genetic.fitness(second_top)))
+        sorted_gen.append(top_performer)
+        sorted_gen.append(second_top)
+
+        #print("replaced the weakest")
+
+        #for item in sorted_gen:
+            #print("result: {} calc: {}".format(item.fitness, Genetic.fitness(item)))
+        
+        #print("MY weakest:{}, FITNESS: {}".format(sorted_gen[-3].configuration, sorted_gen[-3].fitness))
 
 
         return sorted_gen
