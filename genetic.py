@@ -163,7 +163,7 @@ class Genetic:
         for individual in generation:      
             #print(individual.fitness)
             #print("repetitions:{}".format(math.floor(individual.fitness / 10)))
-            selection_pool += math.floor(individual.fitness / 10)  * [individual]
+            selection_pool += int(math.floor(individual.fitness / 10))  * [individual]
             selection_pool += [individual]
 
         #print(selection_pool)

@@ -53,10 +53,11 @@ def read_registries():
     items_result = []
     f = open("clothing.txt")
     for line in f:
-        if line[0] == "-" or line[0] == "\n":
+        if line[0] == "-" or line[0] == "\n" or line[0] == "\r":
             next
         else:
-            items_result.append(line.replace("\n", ""))
+            to_append = line.replace("\n", "")
+            items_result.append(to_append.replace("\r", ""))
     return items_result
 
 def test():
